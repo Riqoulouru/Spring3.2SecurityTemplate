@@ -1,9 +1,9 @@
 package spring.template.controller;
 
 
-import spring.template.dao.request.SignUpRequest;
-import spring.template.dao.request.SigninRequest;
-import spring.template.dao.response.JwtAuthenticationResponse;
+import spring.template.dto.request.SignUpRequest;
+import spring.template.dto.request.SigninRequest;
+import spring.template.dto.response.JwtAuthenticationResponse;
 import spring.template.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

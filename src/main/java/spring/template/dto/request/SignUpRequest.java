@@ -1,4 +1,4 @@
-package spring.template.dao.request;
+package spring.template.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,9 +1,9 @@
 package spring.template.service.impl;
 
 
-import spring.template.dao.request.SignUpRequest;
-import spring.template.dao.request.SigninRequest;
-import spring.template.dao.response.JwtAuthenticationResponse;
+import spring.template.dto.request.SignUpRequest;
+import spring.template.dto.request.SigninRequest;
+import spring.template.dto.response.JwtAuthenticationResponse;
 import spring.template.entities.Role;
 import spring.template.entities.User;
 import spring.template.repository.UserRepository;

@@ -1,9 +1,9 @@
 package spring.template.service;
 
 
-import spring.template.dao.request.SignUpRequest;
-import spring.template.dao.request.SigninRequest;
-import spring.template.dao.response.JwtAuthenticationResponse;
+import spring.template.dto.request.SignUpRequest;
+import spring.template.dto.request.SigninRequest;
+import spring.template.dto.response.JwtAuthenticationResponse;
 
 public interface AuthenticationService {
     JwtAuthenticationResponse signup(SignUpRequest request);
