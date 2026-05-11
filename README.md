@@ -10,6 +10,7 @@ Template d'application Spring Boot avec Spring Security, authentification JWT, S
 - Spring Data JPA / Hibernate
 - JWT avec JJWT
 - PostgreSQL en local via Docker Compose
+- Features d'auth optionnelles, desactivees par defaut
 - H2 uniquement pour les tests
 - Maven Wrapper inclus (`mvnw.cmd`)
 
@@ -51,6 +52,17 @@ POSTGRES_PASSWORD=spring_password
 POSTGRES_HOST_PORT=5432
 POSTGRES_CONTAINER_PORT=5432
 POSTGRES_DATA_VOLUME=postgres_data_dev
+
+SECURITY_FEATURE_REFRESH_TOKEN_ENABLED=false
+SECURITY_FEATURE_REFRESH_TOKEN_EXPIRATION_MS=604800000
+SECURITY_FEATURE_EMAIL_VERIFICATION_ENABLED=false
+SECURITY_FEATURE_EMAIL_VERIFICATION_EXPIRATION_MS=86400000
+SECURITY_FEATURE_PASSWORD_RESET_ENABLED=false
+SECURITY_FEATURE_PASSWORD_RESET_EXPIRATION_MS=900000
+SECURITY_FEATURE_AUDIT_LOG_ENABLED=false
+SECURITY_FEATURE_RATE_LIMIT_ENABLED=false
+SECURITY_FEATURE_RATE_LIMIT_MAX_ATTEMPTS=5
+SECURITY_FEATURE_RATE_LIMIT_WINDOW_MS=60000
 ```
 
 En local, les valeurs par defaut de `application.properties` correspondent a `.env.dev`.
@@ -155,6 +167,134 @@ Ressource protegee:
 GET /api/v1/resource
 Authorization: Bearer <token>
 ```
+
+## Features d'auth optionnelles
+
+Le template contient plusieurs modules utiles en authentification. Ils sont desactives par defaut pour ne pas imposer un comportement au projet final.
+
+Activation depuis `.env.dev` ou `.env.prod`:
+
+```env
+SECURITY_FEATURE_REFRESH_TOKEN_ENABLED=true
+SECURITY_FEATURE_EMAIL_VERIFICATION_ENABLED=true
+SECURITY_FEATURE_PASSWORD_RESET_ENABLED=true
+SECURITY_FEATURE_AUDIT_LOG_ENABLED=true
+SECURITY_FEATURE_RATE_LIMIT_ENABLED=true
+```
+
+### Refresh tokens
+
+Flag:
+
+```env
+SECURITY_FEATURE_REFRESH_TOKEN_ENABLED=true
+```
+
+Quand cette feature est activee, `/signup` et `/signin` retournent aussi un `refreshToken`.
+
+Renouveler une session:
+
+```http
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "token"
+}
+```
+
+Le refresh token est stocke en base sous forme de hash SHA-256. Lors d'un refresh, l'ancien token est revoque et un nouveau refresh token est genere.
+
+### Verification d'email
+
+Flag:
+
+```env
+SECURITY_FEATURE_EMAIL_VERIFICATION_ENABLED=true
+```
+
+Quand cette feature est activee, un nouvel utilisateur est cree avec `emailVerified=false`. Il ne peut pas se connecter tant que son email n'est pas verifie.
+
+Verifier un email:
+
+```http
+POST /api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "token": "token"
+}
+```
+
+Dans ce template, le token est retourne dans la reponse de `/signup` pour faciliter le developpement. En production, il faut l'envoyer par email et ne pas le retourner dans la reponse HTTP.
+
+### Reset password
+
+Flag:
+
+```env
+SECURITY_FEATURE_PASSWORD_RESET_ENABLED=true
+```
+
+Demander un reset:
+
+```http
+POST /api/v1/auth/password-reset/request
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+Confirmer le reset:
+
+```http
+POST /api/v1/auth/password-reset/confirm
+Content-Type: application/json
+
+{
+  "token": "token",
+  "newPassword": "new-password"
+}
+```
+
+Le token de reset est stocke en base sous forme de hash SHA-256. Apres changement du mot de passe, les refresh tokens de l'utilisateur sont revoques si la feature refresh token est activee.
+
+Comme pour la verification d'email, le token est retourne par l'endpoint de demande pour faciliter le developpement. En production, il faut l'envoyer par email.
+
+### Audit log
+
+Flag:
+
+```env
+SECURITY_FEATURE_AUDIT_LOG_ENABLED=true
+```
+
+Quand cette feature est activee, les evenements d'authentification sont historises en base:
+
+- signup
+- signin reussi
+- signin echoue
+
+Les informations stockees incluent l'email, le succes ou l'echec, l'adresse IP, le user-agent, un message et la date.
+
+### Rate limiting
+
+Flag:
+
+```env
+SECURITY_FEATURE_RATE_LIMIT_ENABLED=true
+```
+
+Parametres:
+
+```env
+SECURITY_FEATURE_RATE_LIMIT_MAX_ATTEMPTS=5
+SECURITY_FEATURE_RATE_LIMIT_WINDOW_MS=60000
+```
+
+Le rate limiting protege les endpoints `signup` et `signin` contre les tentatives rapides. L'implementation fournie est en memoire, donc adaptee au developpement ou a une application simple. Pour une application distribuee, remplacez-la par Redis, Bucket4j ou une protection au niveau gateway/reverse proxy.
 
 ## Tests
 

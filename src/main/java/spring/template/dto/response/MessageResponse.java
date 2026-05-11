@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JwtAuthenticationResponse {
-    private String token;
-    private String refreshToken;
-    private String emailVerificationToken;
+public class MessageResponse {
     private String message;
 }
